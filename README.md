@@ -10,7 +10,7 @@ The class 'ScoreBoard' provides methods for:
 
 ## Assumptions and explanation
 * Moved updateScore to the Match model as it logically belongs to a Match. Could have it in the Scoreboard class but would
-  need an additional input parameter or two such as matchId/teamNames
+  need an additional input parameter or two such as matchId/teamNames. I'm assuming goals can be disallowed / previous score updates have been wrong, so I'm only validating that the new score is a not negative number
 
 * Used Integer as score type for null comparison and avoiding unboxing issues
 
