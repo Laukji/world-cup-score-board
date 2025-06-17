@@ -13,6 +13,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 class ScoreBoardTest {
@@ -44,9 +45,9 @@ class ScoreBoardTest {
     @Test
     void updateScore() {
         scoreBoard.startMatch(URUGUAY, MEXICO);
-        Match copaAmericaFinal = scoreBoard.getMatchByTeamNames(URUGUAY, MEXICO);
+        Optional<Match> copaAmericaFinal = scoreBoard.getMatchByTeamNames(URUGUAY, MEXICO);
 
-        copaAmericaFinal.updateScore(2, 3);
+        copaAmericaFinal.ifPresent(match -> match.updateScore(2, 3));
 
         //Want to test that the scoreboard is updated
         Team updatedHomeTeam = scoreBoard.getSummary().getFirst().getHomeTeam();
@@ -66,17 +67,17 @@ class ScoreBoardTest {
 
     @Test
     void getSummary() {//Maybe some parameterized test
-        updateScoreBoard(scoreBoard, URUGUAY, MEXICO, 0, 0);
+        updateScoreBoard(scoreBoard, URUGUAY, MEXICO, 1, 2);
         updateScoreBoard(scoreBoard, PERU, CHILE, 3, 3);
-        updateScoreBoard(scoreBoard, BRAZIL, ARGENTINA, 1, 2);
+        updateScoreBoard(scoreBoard, BRAZIL, ARGENTINA, 0, 0);
         updateScoreBoard(scoreBoard, COLOMBIA, VENEZUELA, 2, 1);
 
         List<Match> actualSummary = scoreBoard.getSummary();
 
         Assertions.assertEquals(PERU, actualSummary.getFirst().getHomeTeam().getName());
-        Assertions.assertEquals(BRAZIL, actualSummary.get(1).getHomeTeam().getName());
-        Assertions.assertEquals(COLOMBIA, actualSummary.get(2).getHomeTeam().getName());
-        Assertions.assertEquals(PERU, actualSummary.getLast().getHomeTeam().getName());
+        Assertions.assertEquals(COLOMBIA, actualSummary.get(1).getHomeTeam().getName());
+        Assertions.assertEquals(URUGUAY, actualSummary.get(2).getHomeTeam().getName());
+        Assertions.assertEquals(BRAZIL, actualSummary.getLast().getHomeTeam().getName());
     }
 
     @Test
@@ -112,10 +113,10 @@ class ScoreBoardTest {
                                     Integer homeTeamScore,
                                     Integer awayTeamScore) {
         scoreBoard.startMatch(URUGUAY, BRAZIL);
-        Match match = scoreBoard.getMatchByTeamNames(URUGUAY, BRAZIL);
+        Optional<Match> match = scoreBoard.getMatchByTeamNames(URUGUAY, BRAZIL);
 
         Assertions.assertThrows(InvalidScoreException.class,
-                () -> match.updateScore(homeTeamScore, awayTeamScore));
+                () -> match.ifPresent(matchToUpdate -> matchToUpdate.updateScore(homeTeamScore, awayTeamScore)));
     }
 
     private static Stream<Arguments> provideInputForUpdateScore() {
@@ -155,7 +156,7 @@ class ScoreBoardTest {
 
     private void updateScoreBoard(ScoreBoard scoreBoard, String homeTeam, String awayTeam, Integer homeTeamScore, Integer awayTeamScore) {
         scoreBoard.startMatch(homeTeam, awayTeam);
-        Match match = scoreBoard.getMatchByTeamNames(homeTeam, awayTeam);
-        match.updateScore(homeTeamScore, awayTeamScore);
+        Optional<Match> match = scoreBoard.getMatchByTeamNames(homeTeam, awayTeam);
+        match.ifPresent(matchToUpdate -> matchToUpdate.updateScore(homeTeamScore, awayTeamScore));
     }
 }

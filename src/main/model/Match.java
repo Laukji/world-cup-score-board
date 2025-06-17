@@ -1,35 +1,37 @@
 package main.model;
 
-import java.time.LocalDate;
-import java.util.concurrent.atomic.AtomicInteger;
+import main.exception.InvalidScoreException;
 
+import java.time.LocalDateTime;
+
+/**
+ * Provides a method for updating the score of an existing match
+ */
 public class Match {
-    private static final AtomicInteger idCounter = new AtomicInteger(0);
-
-    //Maybe score logically belongs to a Match rather than a Team, will see if implementation changes
-    private final Integer matchId;
-    private final LocalDate startTime;
+    private final LocalDateTime startTime;
     private final Team homeTeam;
     private final Team awayTeam;
 
-    public Match(final String homeTeamName, final String awayTeamName) {
-        this.matchId = idCounter.incrementAndGet();
-        this.startTime = LocalDate.now();
+    public Match(String homeTeamName, String awayTeamName) {
+        this.startTime = LocalDateTime.now();
         this.homeTeam = new Team(homeTeamName);
         this.awayTeam = new Team(awayTeamName);
     }
 
-    public void updateScore(final int homeTeamScore, final int awayTeamScore) {
-        //TODO: validation
-        homeTeam.setScore(homeTeamScore);
-        awayTeam.setScore(awayTeamScore);
+    /**
+     * Updates the score of the teams in an ongoing match
+     * @param homeTeamScore the previous or updated score of the homeTeam as Integer
+     * @param awayTeamScore the previous or updated score of the awayTeam as Integer
+     * @throws InvalidScoreException if no score or a negative score is provided
+     */
+    public void updateScore(Integer homeTeamScore, Integer awayTeamScore) {
+        if (isValidScore(homeTeamScore, awayTeamScore)) {
+            homeTeam.setScore(homeTeamScore);
+            awayTeam.setScore(awayTeamScore);
+        }
     }
 
-    public Integer getMatchId() {
-        return matchId;
-    }
-
-    public LocalDate getStartTime() {
+    public LocalDateTime getStartTime() {
         return startTime;
     }
 
@@ -39,5 +41,18 @@ public class Match {
 
     public Team getAwayTeam() {
         return awayTeam;
+    }
+
+    public Integer getTotalScore() {
+        return homeTeam.getScore() + awayTeam.getScore();
+    }
+
+    private boolean isValidScore(Integer homeTeamScore, Integer awayTeamScore) {
+        if (homeTeamScore == null || awayTeamScore == null) {
+            throw new InvalidScoreException("Score for one or both teams are missing");
+        } else if (homeTeamScore < 0 || awayTeamScore < 0) {
+            throw new InvalidScoreException("Score for one or both teams are negative");
+        }
+        return true;
     }
 }
